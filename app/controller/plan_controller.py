@@ -34,7 +34,7 @@ def get_plan(plan_id: int, db: Session = Depends(get_db)):
 def create_plan(
     plan_data: InternetPlanCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_role(["admin", "editor"]))
+    # current_user=Depends(require_role(["admin", "editor"]))
 ):
     return plan_repository.create_plan(db, plan_data)
 

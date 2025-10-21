@@ -1,10 +1,11 @@
+from typing import Optional
 from pydantic import BaseModel
 
 class SEOBase(BaseModel):
     page_name: str
     title: str
-    description: str | None = None
-    keywords: str | None = None
+    description: Optional[str] = None
+    keywords: Optional[str] = None
 
 class SEOCreate(SEOBase):
     pass

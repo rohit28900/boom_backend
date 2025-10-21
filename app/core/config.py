@@ -1,5 +1,6 @@
 import os
 from functools import lru_cache
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Detect environment
@@ -13,15 +14,15 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # --- Database URLs (optional) ---
-    LOCAL_DATABASE_URL: str | None = None
-    PROD_DATABASE_URL: str | None = None
+    LOCAL_DATABASE_URL: Optional[str] = None
+    PROD_DATABASE_URL: Optional[str] = None
 
     # --- Debug flags ---
     LOCAL_DEBUG: bool = True
     PROD_DEBUG: bool = False
 
     # --- Integrations ---
-    MINIO_URL: str | None = None
+    # MINIO_URL: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=env_file,
@@ -57,4 +58,4 @@ settings = get_settings()
 DATABASE_URL = settings.DATABASE_URL
 DEBUG = settings.DEBUG
 LOG_LEVEL = settings.LOG_LEVEL
-MINIO_URL = settings.MINIO_URL
+# MINIO_URL = settings.MINIO_URL
