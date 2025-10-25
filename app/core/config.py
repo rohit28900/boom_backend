@@ -4,31 +4,38 @@ from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ------------------------------------------------------------------------------
-# Detect environment directly from .env (no need for export ENVIRONMENT)
+# Environment detection (Railway-safe)
 # ------------------------------------------------------------------------------
+env_from_system = os.getenv("ENVIRONMENT")
 default_env = "local"
-env_file_base = ".env"
 
-# Try to read ENVIRONMENT value from .env file if present
-if os.path.exists(env_file_base):
-    with open(env_file_base, "r") as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("ENVIRONMENT="):
-                default_env = line.split("=", 1)[1].strip()
-                break
+if env_from_system:
+    ENV = env_from_system
+else:
+    # Fallback: read from .env if no system ENVIRONMENT set
+    env_file_base = ".env"
+    default_env = "local"
 
-ENV = default_env
-env_file = f".env.{ENV}" if os.path.exists(f".env.{ENV}") else env_file_base
+    if os.path.exists(env_file_base):
+        with open(env_file_base, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("ENVIRONMENT="):
+                    default_env = line.split("=", 1)[1].strip()
+                    break
 
-print(f"🔧 Loaded environment: {ENV} → using file: {env_file}")  # optional, for debugging
+    ENV = default_env
+
+env_file = f".env.{ENV}" if os.path.exists(f".env.{ENV}") else ".env"
+
+print(f"🔧 Loaded environment: {ENV} → using file: {env_file}")
 
 # ------------------------------------------------------------------------------
-# Settings
+# Settings class
 # ------------------------------------------------------------------------------
 class Settings(BaseSettings):
     # --- General ---
-    ENVIRONMENT: str = "local"
+    ENVIRONMENT: str = "production"
     SECRET_KEY: str = "supersecretkey"
     LOG_LEVEL: str = "INFO"
 
@@ -69,15 +76,22 @@ class Settings(BaseSettings):
     def DEBUG(self) -> bool:
         return self.LOCAL_DEBUG if self.ENVIRONMENT.lower() == "local" else self.PROD_DEBUG
 
+
 # ------------------------------------------------------------------------------
-# Cached settings
+# Cached settings instance
 # ------------------------------------------------------------------------------
 @lru_cache()
 def get_settings():
     return Settings()
 
-# Expose for easy imports
+
+# ------------------------------------------------------------------------------
+# Expose easy imports
+# ------------------------------------------------------------------------------
 settings = get_settings()
 DATABASE_URL = settings.DATABASE_CONNECTION_URL
 DEBUG = settings.DEBUG
 LOG_LEVEL = settings.LOG_LEVEL
+
+print(f"✅ Using database: {DATABASE_URL}")
+print(f"✅ Debug mode: {DEBUG}")
