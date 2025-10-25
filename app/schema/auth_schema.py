@@ -48,3 +48,12 @@ class AdminResetPasswordRequest(BaseModel):
 
 class AdminResetPasswordResponse(BaseModel):
     message: str
+
+class UserResponse(BaseModel):
+    id: int
+    name: Optional[str]
+    email: EmailStr
+    role: Optional[str]
+
+    class Config:
+        from_attributes = True  # enables ORM compatibility (for SQLAlchemy)

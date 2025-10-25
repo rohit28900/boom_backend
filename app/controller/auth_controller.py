@@ -67,3 +67,5 @@ def admin_reset_password(
     if "error" in result:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
     return result
+
+

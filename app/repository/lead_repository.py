@@ -1,11 +1,28 @@
 from sqlalchemy.orm import Session
 from app.models.lead_model import Lead
 from app.schema.lead_schema import LeadCreate
+from app.utils.pagination import Pagination, PaginationParams
 
 class LeadRepository:
 
     @staticmethod
+    def get_all_paginated(db: Session, params: PaginationParams):
+        """
+        Get paginated leads using Pagination utility
+        
+        Args:
+            db: Database session
+            params: PaginationParams object
+        
+        Returns:
+            PaginatedResponse with leads
+        """
+        query = db.query(Lead)
+        return Pagination.paginate_and_respond(query, params)
+    
+    @staticmethod
     def get_all(db: Session):
+        """Get all leads without pagination"""
         return db.query(Lead).all()
 
     @staticmethod

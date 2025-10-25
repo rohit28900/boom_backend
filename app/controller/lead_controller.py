@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schema.lead_schema import LeadCreate, LeadResponse
 from app.services import lead_service
+from app.utils.pagination import PaginatedResponse, PaginationParams
 from app.core.security import require_role  # import your role checker
 
 router = APIRouter(prefix="/leads", tags=["Leads"])
@@ -13,10 +14,31 @@ router = APIRouter(prefix="/leads", tags=["Leads"])
 def create_lead(lead_data: LeadCreate, db: Session = Depends(get_db)):
     return lead_service.create_lead_service(db, lead_data)
 
-# Any logged-in user can view leads
-@router.get("/", response_model=list[LeadResponse])
-def get_leads(db: Session = Depends(get_db)):
-    return lead_service.get_leads_service(db)
+# Get paginated leads - Any logged-in user can view leads
+@router.get("/", response_model=PaginatedResponse[LeadResponse])
+def get_leads(
+    page: int = Query(1, ge=1, description="Page number (starts from 1)"),
+    page_size: int = Query(10, ge=1, le=100, description="Number of items per page (max 100)"),
+    db: Session = Depends(get_db)
+):
+    """
+    Get paginated list of leads
+    
+    Query Parameters:
+    - **page**: Page number (default: 1)
+    - **page_size**: Items per page (default: 10, max: 100)
+    
+    Returns:
+    - **items**: List of leads for current page
+    - **total**: Total number of leads
+    - **page**: Current page number
+    - **page_size**: Items per page
+    - **total_pages**: Total number of pages
+    - **has_next**: Whether there's a next page
+    - **has_prev**: Whether there's a previous page
+    """
+    params = PaginationParams(page=page, page_size=page_size)
+    return lead_service.get_leads_paginated_service(db, params)
 
 # Only admin, editor can update leads
 # @router.put("/{lead_id}", response_model=LeadResponse, dependencies=[Depends(require_role(["admin", "editor"]))])
