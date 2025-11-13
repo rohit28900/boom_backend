@@ -18,6 +18,8 @@ from app.schema.auth_schema import (  # <-- make sure folder is 'schemas'
     AdminResetPasswordResponse,
 )
 from app.core.security import require_role
+from app.core.security import get_current_user
+from app.core.security import decode_access_token
 
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -68,4 +70,20 @@ def admin_reset_password(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
     return result
 
+@auth_router.get("/me")
+def get_current_user(current_user=Depends(decode_access_token)):
+    """
+    Returns current user's info from JWT token.
+    """
+    return {
+        "email": current_user["email"],
+        "role": current_user["role"]
+    }
 
+@auth_router.post("/logout")
+def logout(current_user=Depends(get_current_user)):
+    """
+    Dummy logout endpoint.
+    In stateless JWT setup, client just deletes its token.
+    """
+    return JSONResponse(content={"message": "Logged out successfully"})

@@ -8,6 +8,7 @@ from app.controller.lead_controller import router as lead_router
 from app.controller.seo_controller import router as seo_router
 from app.controller.plan_controller import router as plan_router
 from app.controller.content_controller import router as content_router
+from app.controller.admin_controller import router as admin_router
 from app.db.database import engine, Base
 from app.core.config import settings, LOG_LEVEL
 
@@ -61,3 +62,4 @@ app.include_router(lead_router, prefix="/leads", tags=["Leads"])
 app.include_router(seo_router, prefix="/seo", tags=["SEO"])
 app.include_router(content_router, prefix="/contents", tags=["Contents"])
 app.include_router(plan_router, prefix="/plans", tags=["Plans"])
+app.include_router(admin_router, prefix="/admin", tags=["Admin"]) 

@@ -1,9 +1,11 @@
+# app/security.py
+
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 # ------------------------------------------------------------------------------
 # 🔐 Configuration
@@ -36,15 +38,19 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/auth/login")
+# ------------------------------------------------------------------------------
+# 🔒 HTTP Bearer Token (for Swagger)
+# ------------------------------------------------------------------------------
+bearer_scheme = HTTPBearer()
 
-
-def decode_access_token(token: str = Depends(oauth2_scheme)):
-    """Decode JWT and return payload."""
+def decode_access_token(credentials: HTTPAuthorizationCredentials = Security(bearer_scheme)):
+    """Decode JWT token and return payload."""
+    token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         role: str = payload.get("role")
+        name: str = payload.get("name") 
         if email is None or role is None:
             raise HTTPException(status_code=401, detail="Invalid token payload")
         return {"email": email, "role": role}
@@ -64,3 +70,19 @@ def require_role(allowed_roles: list[str]):
             )
         return current_user
     return role_checker
+
+# app/core/security.py
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Security(bearer_scheme)):
+    """Get current logged-in user info from JWT."""
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        role: str = payload.get("role")
+        name: str = payload.get("name")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+        return {"email": email, "role": role, "name": name}
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")

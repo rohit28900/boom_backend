@@ -46,7 +46,7 @@ def update_plan(
     plan_id: int,
     plan_data: InternetPlanUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_role(["admin", "editor"]))
+    #current_user=Depends(require_role(["admin", "editor"]))
 ):
     plan = plan_repository.update_plan(db, plan_id, plan_data)
     if not plan:
@@ -60,7 +60,7 @@ def update_plan(
 def delete_plan(
     plan_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(require_role(["admin"]))
+    #current_user=Depends(require_role(["admin"]))
 ):
     success = plan_repository.delete_plan(db, plan_id)
     if not success:

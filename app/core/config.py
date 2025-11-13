@@ -36,8 +36,9 @@ print(f"🔧 Loaded environment: {ENV} → using file: {env_file}")
 class Settings(BaseSettings):
     # --- General ---
     ENVIRONMENT: str = "production"
-    SECRET_KEY: str = "supersecretkey"
+    SECRET_KEY: str = "supersecretkey123"
     LOG_LEVEL: str = "INFO"
+    ALGORITHM: str = "HS256"  
 
     # --- Database URLs ---
     LOCAL_DATABASE_URL: Optional[str] = None
